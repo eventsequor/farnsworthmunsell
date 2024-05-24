@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -160,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
             OutPutResult outPutResult = new OutPutResult(totalErrorScore, mColoredBoxes);
             String jsonString = ow.writeValueAsString(outPutResult);
             writeToFile(jsonString, testId);
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         onShowResult(totalErrorScore, testId);
@@ -176,7 +177,14 @@ public class MainActivity extends AppCompatActivity {
             writer.write(jsonString);
             writer.close();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            try {
+                Context context = getApplicationContext();
+                OutputStreamWriter outputStreamWriter = new OutputStreamWriter(context.openFileOutput(String.format("%s.json", testId), Context.MODE_APPEND));
+                outputStreamWriter.write(jsonString);
+                outputStreamWriter.close();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
         }
 
         System.out.println();
